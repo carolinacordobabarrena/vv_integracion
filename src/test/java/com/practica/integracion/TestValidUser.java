@@ -4,6 +4,8 @@ import com.practica.integracion.DAO.AuthDAO;
 import com.practica.integracion.DAO.GenericDAO;
 import com.practica.integracion.DAO.User;
 import com.practica.integracion.manager.SystemManager;
+import com.practica.integracion.manager.SystemManagerException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,54 +28,92 @@ public class TestValidUser {
 	/**
 	 * RELLENAR POR EL ALUMNO
 	 */
-	@Mock
-	private User user;
+
 	@Mock
 	private static AuthDAO authDAO;
 	@Mock
 	private static GenericDAO genericDAO;
-	@Mock
-	private static Object filter;
 	@InjectMocks
 	SystemManager systemManager;
-	/*
-	*
-	* this.id = id;
-		this.firstName = firstName;
-		this.lastName = lastName;
-		this.address = address;
-		this.roles = roles;
-	* */
+
+	private static User user = new User("14","Fernando","Magic","El nano ae", new ArrayList<>());
+
 	@Test
-	public void testUsuarioValidoStartRemoteSystem()  throws Exception{
-		User user = new User("14","Fernando","Magic","El nano ae", new ArrayList<>());
-		systemManager = new SystemManager(authDAO,genericDAO);
-		//when(systemManager.startRemoteSystem("14","35")).thenReturn(new ArrayList<>());
-		ArrayList<String> arrayListVacia = new ArrayList();
+	public void testStartRemoteSystem()  throws Exception{
+		Collection<Object> arrayListVacia = new ArrayList();
+
+		when(genericDAO.getSomeData(user,"where id=35")).thenReturn(arrayListVacia);
 		when(authDAO.getAuthData("14")).thenReturn(user);
-		systemManager.startRemoteSystem("14","35");
 
+		Collection<Object> aux = systemManager.startRemoteSystem("14","35");
 
-		when(genericDAO.getSomeData(user,"35")).thenReturn(Collections.singleton(arrayListVacia));
-		//when(systemManager.startRemoteSystem("14","35")).thenReturn(Collections.singleton(arrayListVacia));
 		verify(authDAO, times(1)).getAuthData("14");
 		verify(genericDAO,times(1)).getSomeData(user,"where id=" +"35");
+		assertEquals(aux,arrayListVacia);
 	}
-	/*
-	* Cuando (ejecuta algo) ---> Devuelves X
-	* verificar que esto se cumple con la llamada al metodo
-	* */
+
 	@Test
-	public void testUsuarioValidoStartRemoteSystem1()  throws Exception{
-		User user = new User("14","Fernando","Magic","El nano ae", new ArrayList<>());
+	public void testStopRemoteSystem()  throws Exception{
+		Collection<Object> arrayListVacia = new ArrayList();
 
-		SystemManager systemManager = new SystemManager(authDAO,genericDAO);
-		when(systemManager.startRemoteSystem("14","35")).thenReturn(new ArrayList<>());
-		//when(authDAO.getAuthData("14")).thenReturn(user);
-		systemManager.startRemoteSystem("14","35");
-		//verify(authDAO, times(2)).getAuthData("14");
-		verify(genericDAO,times(1)).getSomeData(user,"14");
-		//verify(vehiculo, times(1)).pisarFreno();
+		when(genericDAO.getSomeData(user,"where id=35")).thenReturn(arrayListVacia);
+		when(authDAO.getAuthData("14")).thenReturn(user);
 
+		Collection<Object> aux = systemManager.stopRemoteSystem("14","35");
+
+		verify(authDAO, times(1)).getAuthData("14");
+		verify(genericDAO,times(1)).getSomeData(user,"where id=" +"35");
+		assertEquals(aux,arrayListVacia);
+
+	}
+
+	@Test
+	public void testAddRemoteSystemValido() throws OperationNotSupportedException, SystemManagerException {
+		when(genericDAO.updateSomeData(user,"35")).thenReturn(true);
+		when(authDAO.getAuthData("14")).thenReturn(user);
+
+		systemManager.addRemoteSystem("14","35");
+
+		verify(authDAO, times(1)).getAuthData("14");
+		verify(genericDAO,times(1)).updateSomeData(user,"35");
+	}
+
+	@Test
+	public void testAddRemoteSystemInvalido() throws OperationNotSupportedException, SystemManagerException {
+		when(genericDAO.updateSomeData(user,"35")).thenReturn(false);
+		when(authDAO.getAuthData("14")).thenReturn(user);
+
+		Exception ex = Assertions.assertThrows(SystemManagerException.class, () -> {
+			systemManager.addRemoteSystem("14","35");
+		});
+
+		assertEquals(ex.getMessage(),"cannot add remote");
+		verify(authDAO, times(1)).getAuthData("14");
+		verify(genericDAO,times(1)).updateSomeData(user,"35");
+	}
+	//El metodo no utiliza el id pasado por parametro que hacemos :D
+	@Test
+	public void testDeleteRemoteSystemValido() throws SystemManagerException, OperationNotSupportedException {
+		when(genericDAO.deleteSomeData(user,"35")).thenReturn(true);
+		when(authDAO.getAuthData("14")).thenReturn(user);
+
+		systemManager.deleteRemoteSystem("14","35");
+
+		verify(authDAO, times(1)).getAuthData("14");
+		verify(genericDAO,times(1)).deleteSomeData(user,"35");
+	}
+
+	@Test
+	public void testDeleteRemoteSystemInvalido() throws SystemManagerException, OperationNotSupportedException {
+		when(genericDAO.deleteSomeData(user,"35")).thenReturn(false);
+		when(authDAO.getAuthData("14")).thenReturn(user);
+
+		Exception ex = Assertions.assertThrows(SystemManagerException.class, () -> {
+			systemManager.deleteRemoteSystem("14","35");
+		});
+
+		assertEquals(ex.getMessage(),"cannot delete remote: does remote exists?");
+		verify(authDAO, times(1)).getAuthData("14");
+		verify(genericDAO,times(1)).deleteSomeData(user,"35");
 	}
 }
