@@ -79,7 +79,7 @@ public class TestValidUser {
 	}
 
 	@Test
-	public void testAddRemoteSystemInvalido() throws OperationNotSupportedException, SystemManagerException {
+	public void testAddRemoteSystemInvalido() throws OperationNotSupportedException {
 		when(genericDAO.updateSomeData(user,"35")).thenReturn(false);
 		when(authDAO.getAuthData("14")).thenReturn(user);
 
