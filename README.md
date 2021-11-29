@@ -1,6 +1,5 @@
 # Verificación y Validación del Software 2021
-GRUPO IWx-4x ``<- Modificar``
-
+GRUPO IWM-41-5
 ## Instrucciones para utilizar este proyecto
 
 * Cada alumno debe crearse un usuario de Github
